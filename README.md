@@ -1,0 +1,1 @@
+Repo for learning more about dealing with audio input in SuperCollider

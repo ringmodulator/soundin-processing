@@ -27,3 +27,41 @@ SynthDef.new(\fuzzbox, {
 
 
 x = Synth.new(\fuzzbox);
+
+(
+Window.closeAll;
+w = Window("fuzzbox", Rect(850, 50, 300, 250))
+.front
+.alwaysOnTop_(true);
+
+~thresh = Slider(w, Rect(20,20,150,30))
+.action_({});
+~threshLabel = StaticText(w, Rect(180,25,80,20))
+.string_("Threshold");
+
+~amp = Slider(w, Rect(20,55,150,30))
+.action_({});
+~ampLabel = StaticText(w, Rect(180,60,80,20))
+.string_("Amp");
+
+~smooth = Slider(w, Rect(20,90,150,30))
+.action_({});
+~smoothLabel = StaticText(w, Rect(180,95,80,20))
+.string_("Smoothing");
+
+~distMul = Slider(w, Rect(20,125,150,30))
+.action_({});
+~distMulLabel = StaticText(w, Rect(180,130,80,20))
+.string_("Fuzz Volume");
+
+~oscFreq = PopUpMenu(w, Rect(20,165,150,30))
+.items_(["Unison", "Fifth", "Octave"])
+.action_({});
+~oscFreqLabel = StaticText(w, Rect(180,170,80,20))
+.string_("Osc Freq");
+
+~oscMul = Slider(w, Rect(20,200,150,30))
+.action_({});
+~oscFreqLabel = StaticText(w, Rect(180,205,80,20))
+.string_("Osc Volume");
+)

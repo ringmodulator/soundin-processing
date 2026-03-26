@@ -93,3 +93,6 @@ w = Window("flow", Rect(850, 50, 400, 400))
 
 w.view.decorator_(FlowLayout(w.bounds, 15@15, 7@7));
 )
+
+Knob(w, 40@40);
+w.view.decorator.nextLine;

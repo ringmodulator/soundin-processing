@@ -17,15 +17,13 @@ SynthDef.new(\fuzzbox, {
 	in = SoundIn.ar(0);
 	freq = Pitch.kr(in);
 	vol = Amplitude.kr(in, 0.5, 0.5);
-	osc = SinOsc.ar(freq: freq * Oscfreq, mul: vol * oscMul);
+	osc = SinOsc.ar(freq: freq * oscFreq, mul: vol * oscMul);
 	gate = Compander.ar(in, in, thresh: thresh, slopeBelow: 10, relaxTime: 0.1);
 	dist = CrossoverDistortion.ar(gate, amp: distAmp, smooth:distSmooth, mul: distMul, add: 0);
 	out = osc + dist;
 	Out.ar ([0, 1], out);
 }).add
 )
-
-x = Synth.new(\fuzzbox);
 
 (
 Window.closeAll;
@@ -103,5 +101,17 @@ w = Window("fuzzbox", Rect(850, 50, 300, 250))
 });
 ~oscMulLabel = StaticText(w, Rect(180,205,80,20))
 .string_("Osc Volume");
+
+x = Synth.new(
+	\simplebpf,
+	[
+		\thresh, ~thresh.value,
+		\distAmp, ~distAmp.value,
+		\distSmooth, ~distSmooth.value,
+		\distMul, ~distMul.value,
+		\oscFreq, ~oscFreq.value,
+	    \oscMul, ~oscMul.value;
+	]
+).register;
 )
 

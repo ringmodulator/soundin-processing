@@ -1,3 +1,7 @@
+s.options.blockSize = 1; // Can be set to any power of 2. 64 is the default.
+s.options.hardwareBufferSize = 64;
+s.options.sampleRate = 96000;
+s.boot;
 s.boot
 
 /*
@@ -13,9 +17,10 @@ Very ugly guitar processor. The intention for this project is to make a GUI to c
 (
 SynthDef.new(\fuzzbox, {
 	| thresh = 0.1, oscFreq = 1, oscMul = 1, distAmp = 0.2, distSmooth = 0.3, distMul = 1.0 |
-	var dist,freq, gate, in, osc, out, vol;
+	var dist,freq, hasFreq, gate, in, osc, out, vol;
 	in = SoundIn.ar(0);
-	freq = Pitch.kr(in);
+	//#freq, hasFreq = Pitch.kr(in);
+	#freq, hasFreq = Tartini.kr(in);
 	vol = Amplitude.kr(in, 0.5, 0.5);
 	osc = SinOsc.ar(freq: freq * oscFreq, mul: vol * oscMul);
 	gate = Compander.ar(in, in, thresh: thresh, slopeBelow: 10, relaxTime: 0.1);
@@ -26,12 +31,14 @@ SynthDef.new(\fuzzbox, {
 )
 
 (
-Window.closeAll;
 w = Window("fuzzbox", Rect(850, 50, 300, 250))
 .front
 .alwaysOnTop_(true);
+v = View(w, Rect(20, 20, w.bounds.width - 20, w.bounds.height - 20));
+f = v.addFlowLayout();
 
-~thresh = Slider(w, Rect(20,20,150,30))
+~ampSpec = ControlSpec(0.0, 1.0, 4);
+~thresh = Slider(v, 150@30)
 .action_({
 	arg obj;
 	var thresh;
@@ -40,24 +47,28 @@ w = Window("fuzzbox", Rect(850, 50, 300, 250))
 		x.isPlaying,
 		{x.set(\thresh, thresh)}
 	)
-});
-~threshLabel = StaticText(w, Rect(180,25,80,20))
+})
+.value_(0.1);
+~threshLabel = StaticText(v, 80@20)
 .string_("Threshold");
+f.nextLine;
 
-~distAmp = Slider(w, Rect(20,55,150,30))
+~distAmp = Slider(v, 150@30)
 .action_({
 	arg obj;
 	var distAmp;
-	distAmp = obj.value;
+	distAmp = ~ampSpec.map(obj.value);
 	if(
 		x.isPlaying,
 		{x.set(\distAmp, distAmp)}
 	)
-});
-~distAmpLabel = StaticText(w, Rect(180,60,80,20))
+})
+.value_(~ampSpec.unmap(0.2));
+~distAmpLabel = StaticText(v, 80@20)
 .string_("Amp");
+f.nextLine;
 
-~distSmooth = Slider(w, Rect(20,90,150,30))
+~distSmooth = Slider(v, 150@30)
 .action_({
 	arg obj;
 	var distSmooth;
@@ -66,48 +77,55 @@ w = Window("fuzzbox", Rect(850, 50, 300, 250))
 		x.isPlaying,
 		{x.set(\distSmooth, distSmooth)}
 	)
-});
-~smoothLabel = StaticText(w, Rect(180,95,80,20))
+})
+.value_(0.3);
+~smoothLabel = StaticText(v, 80@20)
 .string_("Smoothing");
+f.nextLine;
 
-~distMul = Slider(w, Rect(20,125,150,30))
+~distMul = Slider(v, 150@30)
 .action_({
 	arg obj;
 	var distMul;
-	distMul = obj.value;
+	distMul = ~ampSpec.map(obj.value);
 	if(
 		x.isPlaying,
 		{x.set(\distMul, distMul)}
 	)
-});
-~distMulLabel = StaticText(w, Rect(180,130,80,20))
+})
+.value_(~ampSpec.unmap(1));
+~distMulLabel = StaticText(v, 80@20)
 .string_("Fuzz Volume");
+f.nextLine;
 
-~oscFreq = PopUpMenu(w, Rect(20,165,150,30))
+~oscFreq = PopUpMenu(v, 150@30)
 .items_(["Unison", "Fifth", "Octave"])
 .action_({
 	arg obj;
+	var sel = obj.items[obj.value];
 	if(x.isPlaying,
 	{
 			if(
-				obj.value == "Unison",
+				sel == "Unison",
 				{x.set(\oscFreq, 1)}
 			);
 			if(
-				obj.value == "Fifth",
+				sel == "Fifth",
 				{x.set(\oscFreq, 1.5)}
 			);
 			if(
-				obj.value == "Octave",
+				sel == "Octave",
 				{x.set(\oscFreq, 2)}
 			);
 		}
 	);
-});
-~oscFreqLabel = StaticText(w, Rect(180,170,80,20))
+})
+.value_(0);
+~oscFreqLabel = StaticText(v, 80@20)
 .string_("Osc Freq");
+f.nextLine;
 
-~oscMul = Slider(w, Rect(20,200,150,30))
+~oscMul = Slider(v, 150@30)
 .action_({
 	arg obj;
 	var oscMul;
@@ -116,20 +134,49 @@ w = Window("fuzzbox", Rect(850, 50, 300, 250))
 		x.isPlaying,
 		{x.set(\oscMul, oscMul)}
 	)
-});
-~oscMulLabel = StaticText(w, Rect(180,205,80,20))
+})
+.value_(1);
+~oscMulLabel = StaticText(v, 80@20)
 .string_("Osc Volume");
+
+CmdPeriod.doOnce({ w.close });
 
 x = Synth.new(
 	\fuzzbox,
 	[
 		\thresh, ~thresh.value,
-		\distAmp, ~distAmp.value,
+		\distAmp, ~ampSpec.map(~distAmp.value),
 		\distSmooth, ~distSmooth.value,
-		\distMul, ~distMul.value,
-		\oscFreq, ~oscFreq.value,
-	    \oscMul, ~oscMul.value;
+		\distMul, ~ampSpec.map(~distMul.value),
+		\oscFreq, 1,
+	    \oscMul, ~oscMul.value
 	]
 ).register;
 )
 
+// Experimenting with HLayout and Vlayout
+(
+w = Window("fuzzbox", Rect(850, 100, 600, 250))
+.front
+.alwaysOnTop_(true);
+
+~thresh = Slider()
+.action_({
+	arg obj;
+	var thresh;
+	thresh = obj.value;
+	if(
+		x.isPlaying,
+		{x.set(\thresh, thresh)}
+	)
+})
+.value_(0.1);
+~threshLabel = StaticText()
+.string_("Threshold")
+.minWidth_(50);
+
+h = VLayout([
+	HLayout([~thresh, ~threshLabel])
+]);
+w.layout = h;
+)

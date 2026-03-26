@@ -1,4 +1,7 @@
-s.boot
+s.options.blockSize = 1; // Can be set to any power of 2. 64 is the default.
+s.options.hardwareBufferSize = 64;
+s.options.sampleRate = 96000;
+s.boot;
 
 // Experiments with guitar and SoundIn. Ultimately I might like some kind of GUI effects processor where I can switch effects on and off and combine them.
 

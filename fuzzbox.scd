@@ -85,7 +85,25 @@ w = Window("fuzzbox", Rect(850, 50, 300, 250))
 
 ~oscFreq = PopUpMenu(w, Rect(20,165,150,30))
 .items_(["Unison", "Fifth", "Octave"])
-.action_({});
+.action_({
+	arg obj;
+	if(x.isPlaying,
+	{
+			if(
+				obj.value == "Unison",
+				{x.set(\oscFreq, 1)}
+			);
+			if(
+				obj.value == "Fifth",
+				{x.set(\oscFreq, 1.5)}
+			);
+			if(
+				obj.value == "Octave",
+				{x.set(\oscFreq, 2)}
+			);
+		}
+	);
+});
 ~oscFreqLabel = StaticText(w, Rect(180,170,80,20))
 .string_("Osc Freq");
 
@@ -103,7 +121,7 @@ w = Window("fuzzbox", Rect(850, 50, 300, 250))
 .string_("Osc Volume");
 
 x = Synth.new(
-	\simplebpf,
+	\fuzzbox,
 	[
 		\thresh, ~thresh.value,
 		\distAmp, ~distAmp.value,

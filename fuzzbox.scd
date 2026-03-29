@@ -1,8 +1,9 @@
+(
 s.options.blockSize = 1; // Can be set to any power of 2. 64 is the default.
 s.options.hardwareBufferSize = 64;
 s.options.sampleRate = 96000;
 s.boot;
-s.boot
+)
 
 /*
 
